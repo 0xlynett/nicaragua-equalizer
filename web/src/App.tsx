@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { formatEther, parseEther } from "viem";
 import { useAccount, useBalance, useConnect, useDisconnect } from "wagmi";
 import { injected } from "wagmi/connectors";
@@ -53,15 +52,11 @@ export default function App() {
     (redemptionPriceData as bigint) ?? BigInt(0)
   );
 
-  const { writeContract: approve, error: approveError } =
-    useWriteErc20Approve();
-  const { writeContract: buy, error: buyError } = useWriteEqualizerBuy();
-  const { writeContract: deposit, error: depositError } =
-    useWriteEqualizerDeposit();
-  const { writeContract: withdraw, error: withdrawError } =
-    useWriteEqualizerWithdraw();
-  const { writeContract: redeem, error: redeemError } =
-    useWriteEqualizerRedeem();
+  const { writeContract: approve } = useWriteErc20Approve();
+  const { writeContract: buy } = useWriteEqualizerBuy();
+  const { writeContract: deposit } = useWriteEqualizerDeposit();
+  const { writeContract: withdraw } = useWriteEqualizerWithdraw();
+  const { writeContract: redeem } = useWriteEqualizerRedeem();
 
   /*useEffect(() => {
     console.error(buyError);

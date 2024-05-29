@@ -12,7 +12,8 @@
     "forge:build": "cd sol && forge build",
     "dev": "cd web && yarn dev",
     "test": "cd sol && forge test --fork-url https://base-rpc.publicnode.com -vvv",
-    "coverage": "cd sol && forge coverage --fork-url https://base-rpc.publicnode.com -vvv"
+    "coverage": "cd sol && forge coverage --fork-url https://base-rpc.publicnode.com -vvv",
+    "build": "cd web && yarn build"
   },
   "workspaces": [
     "web"
