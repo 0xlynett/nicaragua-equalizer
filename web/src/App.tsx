@@ -1,22 +1,25 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useState } from "react";
 import { formatEther, parseEther } from "viem";
 import { useAccount, useBalance, useConnect, useDisconnect } from "wagmi";
 import { injected } from "wagmi/connectors";
 import {
+  useReadErc20Allowance,
   useReadErc20BalanceOf,
   useWriteEqualizerBuy,
   useWriteEqualizerDeposit,
   useWriteEqualizerWithdraw,
+  useWriteErc20Approve,
 } from "../generated";
 import config from "./config";
 
 export default function App() {
-  let [nicDepositAmount, setNicDepositAmount] = useState("0");
-  let [nicWithdrawAmount, setNicWithdrawAmount] = useState("0");
-  let [ethBuyAmount, setEthBuyAmount] = useState("0");
+  const [nicDepositAmount, setNicDepositAmount] = useState("0");
+  const [nicWithdrawAmount, setNicWithdrawAmount] = useState("0");
+  const [ethBuyAmount, setEthBuyAmount] = useState("0");
 
-  let { connect } = useConnect();
-  let { disconnect } = useDisconnect();
+  const { connect } = useConnect();
+  const { disconnect } = useDisconnect();
   const account = useAccount();
 
   const { data: ethBalanceData } = useBalance({ address: account.address });
@@ -34,13 +37,20 @@ export default function App() {
   });
   const eNicBalance = formatEther((eNicBalanceData as bigint) ?? BigInt(0));
 
+  const { data: nicAllowanceData } = useReadErc20Allowance({
+    address: config.nicToken,
+    args: [account.address, config.eq],
+  });
+
+  const { writeContract: approve, error: approveError } =
+    useWriteErc20Approve();
   const { writeContract: buy, error: buyError } = useWriteEqualizerBuy();
   const { writeContract: deposit, error: depositError } =
     useWriteEqualizerDeposit();
   const { writeContract: withdraw, error: withdrawError } =
     useWriteEqualizerWithdraw();
 
-  useEffect(() => {
+  /*useEffect(() => {
     console.error(buyError);
   }, [buyError]);
   useEffect(() => {
@@ -48,7 +58,7 @@ export default function App() {
   }, [depositError]);
   useEffect(() => {
     console.error(withdrawError);
-  }, [withdrawError]);
+  }, [withdrawError]);*/
 
   return (
     <div className="min-h-screen p-8">
@@ -60,7 +70,9 @@ export default function App() {
         </p>
         <p className="py-2">
           sells all the nicaragua tokens after the nuke. we are derisking
-          Nicaragua for the Nicaragua Plan.
+          Nicaragua for the Nicaragua Plan. (lyn is not responsible for anything
+          that goes wrong with the use of this service. absolutely nothing.
+          nada. zilch. the nicca orchestra takes zero fees, btw)
         </p>
 
         <iframe
@@ -139,16 +151,36 @@ export default function App() {
                   className="button"
                   onClick={() => {
                     try {
-                      deposit({
-                        address: config.eq,
-                        args: [parseEther(nicDepositAmount)],
-                      });
+                      if (
+                        (nicAllowanceData as bigint) >=
+                        parseEther(nicDepositAmount)
+                      ) {
+                        deposit({
+                          address: config.eq,
+                          args: [parseEther(nicDepositAmount)],
+                        });
+                      } else {
+                        approve({
+                          address: config.nicToken,
+                          args: [
+                            config.eq,
+                            BigInt(
+                              "115792089237316195423570985008687907853269984665640564039457584007913129639935"
+                            ),
+                          ],
+                        });
+                      }
                     } catch (e) {
                       console.log(e);
                     }
                   }}
                 >
-                  deposit
+                  {(nicAllowanceData as bigint) >=
+                  parseEther(nicDepositAmount) ? (
+                    <>deposit</>
+                  ) : (
+                    <>approve</>
+                  )}
                 </button>
                 <button
                   className="block underline text-pink-600"
