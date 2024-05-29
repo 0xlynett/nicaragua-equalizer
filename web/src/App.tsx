@@ -131,13 +131,6 @@ export default function App() {
           </li>
         </ul>
 
-        <iframe
-          id="dextools-widget"
-          className="w-full h-60"
-          title="DEXTools Trading Chart"
-          src="https://www.dextools.io/widget-chart/en/base/pe-light/0x8bC3878e628E11c81a027860130ee4cBF655041C?theme=dark&chartType=1&chartResolution=10&drawingToolbars=false&output=embed"
-        ></iframe>
-
         <button
           className="button text-xl my-4 font-bold"
           onClick={() => {
@@ -323,6 +316,13 @@ export default function App() {
             </div>
           </>
         )}
+        <iframe
+          id="dextools-widget"
+          className="w-full"
+          height={500}
+          title="DEXTools Trading Chart"
+          src="https://www.dextools.io/widget-chart/en/base/pe-light/0x8bC3878e628E11c81a027860130ee4cBF655041C?theme=dark&chartType=1&chartResolution=10&drawingToolbars=false&output=embed"
+        ></iframe>
       </div>
     </div>
   );
