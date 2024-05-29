@@ -4,16 +4,19 @@ import { formatEther, parseEther } from "viem";
 import { useAccount, useBalance, useConnect, useDisconnect } from "wagmi";
 import { injected } from "wagmi/connectors";
 import {
+  useReadEqualizerRedemptionPrice,
   useReadErc20Allowance,
   useReadErc20BalanceOf,
   useWriteEqualizerBuy,
   useWriteEqualizerDeposit,
+  useWriteEqualizerRedeem,
   useWriteEqualizerWithdraw,
   useWriteErc20Approve,
 } from "../generated";
 import config from "./config";
 
 export default function App() {
+  const [redemptionAmount, setRedemptionAmount] = useState("0");
   const [nicDepositAmount, setNicDepositAmount] = useState("0");
   const [nicWithdrawAmount, setNicWithdrawAmount] = useState("0");
   const [ethBuyAmount, setEthBuyAmount] = useState("0");
@@ -42,6 +45,14 @@ export default function App() {
     args: [account.address, config.eq],
   });
 
+  const { data: redemptionPriceData } = useReadEqualizerRedemptionPrice({
+    address: config.eq,
+    args: [redemptionAmount],
+  });
+  const redemptionEth = formatEther(
+    (redemptionPriceData as bigint) ?? BigInt(0)
+  );
+
   const { writeContract: approve, error: approveError } =
     useWriteErc20Approve();
   const { writeContract: buy, error: buyError } = useWriteEqualizerBuy();
@@ -49,6 +60,8 @@ export default function App() {
     useWriteEqualizerDeposit();
   const { writeContract: withdraw, error: withdrawError } =
     useWriteEqualizerWithdraw();
+  const { writeContract: redeem, error: redeemError } =
+    useWriteEqualizerRedeem();
 
   /*useEffect(() => {
     console.error(buyError);
@@ -74,6 +87,38 @@ export default function App() {
           that goes wrong with the use of this service. absolutely nothing.
           nada. zilch. the nicca orchestra takes zero fees, btw)
         </p>
+        <ul>
+          <li>
+            <a href="https://worldpvp.co" className="underline text-blue-700">
+              worldpvp
+            </a>{" "}
+            (this is the game we're playing)
+          </li>
+          <li>
+            orchestra contract:{" "}
+            <a
+              href="https://basescan.org/address/0x584b4d1e63892b1ad238b25db9f0d02ecd4c8a57"
+              className="underline text-blue-700"
+            >
+              <code>0x584b4d1e63892b1ad238b25db9f0d02ecd4c8a57</code>
+            </a>
+          </li>
+          <li>
+            nicaragua token:{" "}
+            <a
+              href="https://basescan.org/address/0xBDF7f7da57658A7d02c51bEC3fC427e4627ACA6f"
+              className="underline text-blue-700"
+            >
+              <code>0xBDF7f7da57658A7d02c51bEC3fC427e4627ACA6f</code>
+            </a>{" "}
+            <a
+              href="https://app.uniswap.org/swap?outputCurrency=0xBDF7f7da57658A7d02c51bEC3fC427e4627ACA6f"
+              className="underline text-pink-500"
+            >
+              (also see on uniswap)
+            </a>
+          </li>
+        </ul>
 
         <iframe
           id="dextools-widget"
@@ -227,6 +272,43 @@ export default function App() {
                   you have {eNicBalance} eNIC
                 </button>
               </div>
+            </div>
+            <div className="border p-4">
+              <label className="block font-bold">Redeem eNIC &rarr; ETH</label>
+              <p>
+                Coins can only be redeemed after the admins have called{" "}
+                <code>sellAll()</code>.
+              </p>
+              <input
+                type="number"
+                min="0"
+                value={redemptionAmount}
+                onChange={(e) => setRedemptionAmount(e.target.value)}
+              />
+
+              <button
+                className="button"
+                onClick={() => {
+                  try {
+                    redeem({
+                      address: config.eq,
+                      args: [parseEther(redemptionAmount)],
+                    });
+                  } catch (e) {
+                    console.log(e);
+                  }
+                }}
+              >
+                redeem for {redemptionEth} ETH
+              </button>
+              <button
+                className="block underline text-pink-600"
+                onClick={() => {
+                  setRedemptionAmount(eNicBalance);
+                }}
+              >
+                you have {eNicBalance} eNIC
+              </button>
             </div>
           </>
         )}
