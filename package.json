@@ -8,7 +8,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "postinstall": "yarn wagmi generate",
+    "generate": "yarn wagmi generate",
     "forge:build": "cd sol && forge build",
     "dev": "cd web && yarn dev",
     "test": "cd sol && forge test --fork-url https://base-rpc.publicnode.com -vvv",
@@ -21,5 +21,6 @@
   "devDependencies": {
     "@wagmi/cli": "^2.1.8",
     "truffle": "^5.11.5"
-  }
+  },
+  "packageManager": "yarn@1.22.19"
 }
