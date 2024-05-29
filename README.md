@@ -1,3 +1,3 @@
 ## equalizer
 
-`cd sol && forge test --fork-url https://base-rpc.publicnode.com	`
+`cd sol && forge test --fork-url https://base-rpc.publicnode.com`

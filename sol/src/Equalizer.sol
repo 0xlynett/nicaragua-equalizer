@@ -183,7 +183,6 @@ interface IUniswapV2Router02 is IUniswapV2Router01 {
 
 contract Equalizer is ERC20, Ownable {
     ERC20 public NICARAGUA;
-    address public LP;
     IUniswapV2Router02 public ROUTER;
     bool public depositPaused;
     bool public withdrawPaused;
@@ -202,9 +201,9 @@ contract Equalizer is ERC20, Ownable {
         return "eNIC";
     }
 
-    constructor(address nic, address lp, address router) {
+    constructor(address nic, address router) {
         _initializeOwner(msg.sender);
-        setData(nic, lp, router);
+        setData(nic, router);
     }
 
     function setPause(bool _deposit, bool _withdraw) public onlyOwner {
@@ -212,9 +211,8 @@ contract Equalizer is ERC20, Ownable {
         withdrawPaused = _withdraw;
     }
 
-    function setData(address nic, address lp, address router) public onlyOwner {
+    function setData(address nic, address router) public onlyOwner {
         ROUTER = IUniswapV2Router02(router);
-        LP = lp;
         NICARAGUA = ERC20(nic);
     }
 
@@ -267,6 +265,7 @@ contract Equalizer is ERC20, Ownable {
     }
 
     function buy() public payable {
+        require(!depositPaused, "Deposits paused");
         // buy
         uint256 amount = msg.value + ethBalance[msg.sender];
         address[] memory path = new address[](2);

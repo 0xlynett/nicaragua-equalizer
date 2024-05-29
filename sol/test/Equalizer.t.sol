@@ -4,13 +4,11 @@ pragma solidity ^0.8.13;
 import {Test, console} from "forge-std/Test.sol";
 import "../src/Equalizer.sol";
 import "solady/tokens/ERC20.sol";
-import "./Doer.sol";
 
 contract EqualizerTest is Test {
     Equalizer public eq;
     ERC20 public nic =
         ERC20(address(0xBDF7f7da57658A7d02c51bEC3fC427e4627ACA6f));
-    address public lp = address(0x8bC3878e628E11c81a027860130ee4cBF655041C);
     IUniswapV2Router02 public router =
         IUniswapV2Router02(address(0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24));
 
@@ -18,7 +16,7 @@ contract EqualizerTest is Test {
     receive() external payable {}
 
     function setUp() public {
-        eq = new Equalizer(address(nic), lp, address(router));
+        eq = new Equalizer(address(nic), address(router));
     }
 
     function testBuy() public {

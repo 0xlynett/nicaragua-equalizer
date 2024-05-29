@@ -1,35 +1,204 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import { formatEther, parseEther } from "viem";
+import { useAccount, useBalance, useConnect, useDisconnect } from "wagmi";
+import { injected } from "wagmi/connectors";
+import {
+  useReadErc20BalanceOf,
+  useWriteEqualizerBuy,
+  useWriteEqualizerDeposit,
+  useWriteEqualizerWithdraw,
+} from "../generated";
+import config from "./config";
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  let [nicDepositAmount, setNicDepositAmount] = useState("0");
+  let [nicWithdrawAmount, setNicWithdrawAmount] = useState("0");
+  let [ethBuyAmount, setEthBuyAmount] = useState("0");
+
+  let { connect } = useConnect();
+  let { disconnect } = useDisconnect();
+  const account = useAccount();
+
+  const { data: ethBalanceData } = useBalance({ address: account.address });
+  const ethBalance = formatEther(ethBalanceData?.value ?? BigInt(0));
+
+  const { data: nicBalanceData } = useReadErc20BalanceOf({
+    address: config.nicToken,
+    args: [account.address],
+  });
+  const nicBalance = formatEther((nicBalanceData as bigint) ?? BigInt(0));
+
+  const { data: eNicBalanceData } = useReadErc20BalanceOf({
+    address: config.eNicToken,
+    args: [account.address],
+  });
+  const eNicBalance = formatEther((eNicBalanceData as bigint) ?? BigInt(0));
+
+  const { writeContract: buy, error: buyError } = useWriteEqualizerBuy();
+  const { writeContract: deposit, error: depositError } =
+    useWriteEqualizerDeposit();
+  const { writeContract: withdraw, error: withdrawError } =
+    useWriteEqualizerWithdraw();
+
+  useEffect(() => {
+    console.error(buyError);
+  }, [buyError]);
+  useEffect(() => {
+    console.error(depositError);
+  }, [depositError]);
+  useEffect(() => {
+    console.error(withdrawError);
+  }, [withdrawError]);
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <div className="min-h-screen p-8">
+      <div className="border p-4 font-serif h-full">
+        <h1 className="font-bold text-3xl">NICCA ORCHESTRA</h1>
 
-export default App
+        <p className="text-xl">
+          "hodl your nicaragua, my niccas" -unknown nicaraguan, 2024
+        </p>
+        <p className="py-2">
+          sells all the nicaragua tokens after the nuke. we are derisking
+          Nicaragua for the Nicaragua Plan.
+        </p>
+
+        <iframe
+          id="dextools-widget"
+          className="w-full h-60"
+          title="DEXTools Trading Chart"
+          src="https://www.dextools.io/widget-chart/en/base/pe-light/0x8bC3878e628E11c81a027860130ee4cBF655041C?theme=dark&chartType=1&chartResolution=10&drawingToolbars=false&output=embed"
+        ></iframe>
+
+        <button
+          className="button text-xl my-4 font-bold"
+          onClick={() => {
+            if (!account.isConnected) {
+              connect({ connector: injected() });
+            } else {
+              disconnect();
+            }
+          }}
+        >
+          {!account.isConnected && <>connect wallet</>}
+          {account.isConnected && <>disconnect wallet</>}
+        </button>
+
+        {account.isConnected && (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-3 text-left">
+              <div className="border p-4">
+                <label className="block font-bold">Buy eNIC</label>
+                <p>
+                  use your ETH to buy NICARAGUA directly and have it wrapped for
+                  you. saves some of the token tax
+                </p>
+                <input
+                  type="number"
+                  min="0"
+                  value={ethBuyAmount}
+                  onChange={(e) => setEthBuyAmount(e.target.value)}
+                />
+                <button
+                  className="button"
+                  onClick={() => {
+                    try {
+                      buy({
+                        address: config.eq,
+                        value: parseEther(ethBuyAmount),
+                      });
+                    } catch (e) {
+                      console.log(e);
+                    }
+                  }}
+                >
+                  buy
+                </button>
+                <button
+                  className="block underline text-pink-600"
+                  onClick={() => {
+                    setEthBuyAmount(ethBalance);
+                  }}
+                >
+                  you have {ethBalance} ETH
+                </button>
+              </div>
+              <div className="border p-4">
+                <label className="block font-bold">
+                  Deposit NICARAGUA &rarr; eNIC
+                </label>
+                <p>(2.5% fee on transfer, we can't change this)</p>
+                <input
+                  type="number"
+                  value={nicDepositAmount}
+                  min="0"
+                  onChange={(e) => setNicDepositAmount(e.target.value)}
+                />
+
+                <button
+                  className="button"
+                  onClick={() => {
+                    try {
+                      deposit({
+                        address: config.eq,
+                        args: [parseEther(nicDepositAmount)],
+                      });
+                    } catch (e) {
+                      console.log(e);
+                    }
+                  }}
+                >
+                  deposit
+                </button>
+                <button
+                  className="block underline text-pink-600"
+                  onClick={() => {
+                    setNicDepositAmount(nicBalance);
+                  }}
+                >
+                  you have {nicBalance} NIC
+                </button>
+              </div>
+              <div className="border p-4">
+                <label className="block font-bold">
+                  Withdraw eNIC &rarr; NICARAGUA
+                </label>
+                <p>(2.5% fee on transfer, we can't change this)</p>
+                <input
+                  type="number"
+                  min="0"
+                  value={nicWithdrawAmount}
+                  onChange={(e) => setNicWithdrawAmount(e.target.value)}
+                />
+
+                <button
+                  className="button"
+                  onClick={() => {
+                    try {
+                      withdraw({
+                        address: config.eq,
+                        args: [parseEther(nicWithdrawAmount)],
+                      });
+                    } catch (e) {
+                      console.log(e);
+                    }
+                  }}
+                >
+                  withdraw
+                </button>
+                <button
+                  className="block underline text-pink-600"
+                  onClick={() => {
+                    setNicWithdrawAmount(eNicBalance);
+                  }}
+                >
+                  you have {eNicBalance} eNIC
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
