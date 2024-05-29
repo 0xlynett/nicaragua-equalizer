@@ -87,12 +87,28 @@ export default function App() {
           that goes wrong with the use of this service. absolutely nothing.
           nada. zilch. the nicca orchestra takes zero fees, btw)
         </p>
-        <ul>
+        <ul className="list-disc list-inside">
           <li>
             <a href="https://worldpvp.co" className="underline text-blue-700">
               worldpvp
             </a>{" "}
             (this is the game we're playing)
+          </li>
+          <li>
+            <a
+              href="https://x.com/NicaraguaCTO"
+              className="underline text-blue-700"
+            >
+              twitter/X (@NicaraguaCTO)
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://discord.gg/y62pYW5jG7"
+              className="underline text-blue-700"
+            >
+              discord server
+            </a>
           </li>
           <li>
             orchestra contract:{" "}
