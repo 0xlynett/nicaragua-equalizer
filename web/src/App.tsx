@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { formatEther, parseEther } from "viem";
-import { useAccount, useBalance, useConnect, useDisconnect } from "wagmi";
+import {
+  useAccount,
+  useBalance,
+  useConnect,
+  useDisconnect,
+  useSwitchChain,
+} from "wagmi";
 import { injected } from "wagmi/connectors";
 import {
   useReadEqualizerRedemptionPrice,
@@ -13,6 +19,7 @@ import {
   useWriteErc20Approve,
 } from "../generated";
 import config from "./config";
+import { base } from "wagmi/chains";
 
 export default function App() {
   const [redemptionAmount, setRedemptionAmount] = useState("0");
@@ -23,6 +30,7 @@ export default function App() {
   const { connect } = useConnect();
   const { disconnect } = useDisconnect();
   const account = useAccount();
+  const { switchChain } = useSwitchChain();
 
   const { data: ethBalanceData } = useBalance({ address: account.address });
   const ethBalance = formatEther(ethBalanceData?.value ?? BigInt(0));
@@ -137,15 +145,26 @@ export default function App() {
             if (!account.isConnected) {
               connect({ connector: injected() });
             } else {
-              disconnect();
+              if (account.chain?.id != base.id) {
+                switchChain({
+                  chainId: base.id,
+                });
+              } else {
+                disconnect();
+              }
             }
           }}
         >
           {!account.isConnected && <>connect wallet</>}
-          {account.isConnected && <>disconnect wallet</>}
+          {account.isConnected && account.chain?.id != base.id && (
+            <>switch chain</>
+          )}
+          {account.isConnected && account.chain?.id == base.id && (
+            <>disconnect wallet</>
+          )}
         </button>
 
-        {account.isConnected && (
+        {account.isConnected && account.chain?.id == base.id && (
           <>
             <div className="grid grid-cols-1 md:grid-cols-3 text-left">
               <div className="border p-4">
