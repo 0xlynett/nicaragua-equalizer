@@ -22,6 +22,7 @@ contract EqualizerTest is Test {
     function testBuy() public {
         eq.buy{value: 1 ether}();
         console.log("Balance of eNIC after buy:", eq.balanceOf(address(this)));
+        console.log("Balance of NIC after buy:", nic.balanceOf(address(eq)));
     }
 
     function testRedeemBeforeSell() public {
